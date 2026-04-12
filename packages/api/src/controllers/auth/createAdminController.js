@@ -1,0 +1,51 @@
+const { db } = require("../../utils/db");
+const ApiException = require("../../exceptions/apiException");
+const bcrypt = require("bcryptjs");
+const { SALT_BCRYPT } = require("../../utils/constants");
+
+const createAdmin = async (req, res) => {
+  const { name, email, phone, document, password, city, state, birthDate } =
+    req.body;
+
+  const person = await db.person.findFirst({
+    where: {
+      OR: [{ email }, { document }],
+    },
+  });
+
+  if (person) {
+    throw new ApiException("email/document already been used", 409);
+  }
+
+  const passwordHash = await bcrypt.hash(password, SALT_BCRYPT);
+
+  const admin = await db.person.create({
+    data: {
+      document,
+      email,
+      name,
+      password: passwordHash,
+      phone,
+      role: "ADMIN",
+      city,
+      state,
+      birth_date: new Date(birthDate),
+    },
+    select: {
+      public_id: true,
+      name: true,
+      email: true,
+      phone: true,
+      role: true,
+      document: true,
+      city: true,
+      state: true,
+      birth_date: true,
+      created_at: true,
+    },
+  });
+
+  res.status(200).json(admin);
+};
+
+module.exports = createAdmin;
