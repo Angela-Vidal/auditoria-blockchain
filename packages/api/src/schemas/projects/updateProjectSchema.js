@@ -1,8 +1,8 @@
 const { z } = require("zod");
-const createProjectSchema = require("./createProjectSchema");
+const { baseProjectSchema } = require("./createProjectSchema");
 
-const updateProjectSchema = createProjectSchema
-  .safeExtend({
+const updateProjectSchema = baseProjectSchema
+  .extend({
     // Adiciona o campo de status
     status: z
       .enum(["DRAFT", "ACTIVE", "PAUSED", "FINISHED", "CANCELLED"], {
@@ -19,7 +19,7 @@ const updateProjectSchema = createProjectSchema
     {
       message: "End date must be after start date",
       path: ["end_date"],
-    }
+    },
   );
 
 module.exports = updateProjectSchema;
